@@ -19,7 +19,7 @@ function list_speakers($atts=array(),$content=null,$code=''){
 	
 	$Bootstrap = Bootstrap::getBootstrap(); // The Top Quark bootstrap;
 	$Bootstrap->usePackage('FestivalApp'); // fire up The Conference Plugin
-	$ConferenceContainer = new FestivalContainer();
+	$FestivalContainer = new FestivalContainer();
 	$Conference = $FestivalContainer->getFestival($year);
 	if (!is_a($Conference,'Festival') or !$Conference->getParameter('FestivalLineupIsPublished')){ 
 		return 'Not published yet';
@@ -27,12 +27,14 @@ function list_speakers($atts=array(),$content=null,$code=''){
 	$Speakers = $Conference->getLineup();
 
 	// Here's where you make your markup
-	$return = '';
+	$return = 'there you go....';
 	$i=0;
+	//error_log('Speakers  ' . $Speakers[1] );
 	foreach ($Speakers as $SpeakerID => $Speaker){
-		if ($i<$nb_speakers){
+		//if ($i<$nb_speakers){
+			error_log('Speakers  ' . $Speaker->getParameter('ArtistFullName') );
 			$return.= '<div class="speaker">';
-			$return.= '	<div class="speaker-name"><a href="'.$speaker_page.$SpeakerID.'">'.$Speaker->getParameter('ArtistFullName').'</a></div>';
+			$return.= '	<div class="speaker-name"><a href="'.$speaker_page.'?subject=lineup&_year='.$year.'&speaker='.$SpeakerID.'">'.$Speaker->getParameter('ArtistFullName').'</a></div>';
 			$Speaker->parameterizeAssociatedMedia(); // prepares the images
 			$Images = $Speaker->getParameter('ArtistAssociatedImages');
 			if (count($Images)){
@@ -40,7 +42,7 @@ function list_speakers($atts=array(),$content=null,$code=''){
 			}
 			$return.= '<div class="speaker-description">'.$Speaker->getParameter('ArtistDescription').'</div>';
 			$return.= '</div> <!-- .speaker -->';
-		}
+	//	}
 		$i++;
 	}
 	return $return;
@@ -57,9 +59,10 @@ function widget_list_speakers($args) {
   $num_speakers = $options["nb_speakers"];
   $show_excerpt = $options["show_excerpt"];
   $year = $options["year"];
+  $speaker_page= $options["speaker_page"];
 
   echo $before_widget;
-  list_speakers($options);
+  echo list_speakers($options);
   echo $after_widget;
 }
 
@@ -80,6 +83,7 @@ function widget_list_speakers_control() {
     $options['num_speakers'] = $widget_data['num_speakers'];
     $options['year'] = $widget_data['year'];
     $options['show_excerpt'] = $widget_data['show_excerpt'];
+    $options['speaker_page'] = $widget_data['speaker_page'];
 
     update_option(LIST_SPEAKERS_WIDGET_ID, $options);
   }
@@ -88,6 +92,7 @@ function widget_list_speakers_control() {
   $num_speakers = $options['num_speakers'];
   $year = $options['year'];
   $show_excerpt = $options['show_excerpt'];
+  $speaker_page = $options['speaker_page'];
   
 ?>
   <p>
@@ -99,6 +104,16 @@ function widget_list_speakers_control() {
       id="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-num-speakers" 
       value="<?php echo $num_speakers; ?>">
   </p>
+  <p>
+    <label for="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-num-posts">
+    Speaker page
+    </label>
+    <input class="widefat" type="text" 
+      name="<?php echo LIST_SPEAKERS_WIDGET_ID; ?>[speaker_page]" 
+      id="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-speaker-page" 
+      value="<?php echo $speaker_page; ?>">
+  </p>
+
   <p>
     <label for="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-year">
  	Year:
