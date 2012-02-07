@@ -1,0 +1,31 @@
+#list-speakers{
+	width:310px;
+	height:100px;
+	display:block;
+	overflow:hidden;
+}
+#list-speakers .list-speaker-item{
+	width:300px;
+	padding-left:10px;
+	height:100px;
+	display:none;
+}
+#list-speakers .speaker-image{
+	float:left;
+	display:block;
+	width:70px;
+	height:70px;
+	padding:2px;
+}
+#list-speakers .speaker-image img{
+	width:64px;
+	border:2px solid #fff;
+	height:64px;
+}
+#list-speakers .speaker-name{
+	font-size:15px;
+	font-weight:bold;
+}
+#list-speakers .speaker-list-read-more{
+	float:right;
+}

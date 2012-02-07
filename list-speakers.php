@@ -9,6 +9,9 @@ Author URI: http://yabo-concept.ch
 */
 
 define(LIST_SPEAKERS_WIDGET_ID, "widget_list_speakers");
+define( 'LIST_SPEAKERS_PLUGIN_URL', WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__)) );
+
+
 
 function list_speakers($atts=array(),$content=null,$code=''){
 	$year = isset($atts['year']) ? $atts['year'] : date("Y"); // let the year be specified in the shortcode
@@ -27,32 +30,95 @@ function list_speakers($atts=array(),$content=null,$code=''){
 	$Speakers = $Conference->getLineup();
 
 	// Here's where you make your markup
-	$return = 'there you go....';
+
 	$i=0;
 	//error_log('Speakers  ' . $Speakers[1] );
+	$return.= '<div id="list-speakers">';
 	foreach ($Speakers as $SpeakerID => $Speaker){
 		//if ($i<$nb_speakers){
 			error_log('Speakers  ' . $Speaker->getParameter('ArtistFullName') );
-			$return.= '<div class="speaker">';
-			$return.= '	<div class="speaker-name"><a href="'.$speaker_page.'?subject=lineup&_year='.$year.'&speaker='.$SpeakerID.'">'.$Speaker->getParameter('ArtistFullName').'</a></div>';
+			$return.= '<div class="list-speaker-item">';
+			$return.= '<div class="speaker-image">';
 			$Speaker->parameterizeAssociatedMedia(); // prepares the images
 			$Images = $Speaker->getParameter('ArtistAssociatedImages');
 			if (count($Images)){
-				$return.= '<div class="speaker-image"><img src="'.$Images[0]['Thumb'].'"/></div>';
+				$return.= '<img src="'.$Images[0]['Thumb'].'"/>';
 			}
-			$return.= '<div class="speaker-description">'.$Speaker->getParameter('ArtistDescription').'</div>';
+			else{
+				$return.= '<img src="/wp-content/plugins/list-speakers/img/user_64.png" />';
+			}
+			$return.= '</div>';
+		
+			$return.= '	<div class="speaker-name"><a href="'.$speaker_page.'?subject=lineup&_year='.$year.'&speaker='.$SpeakerID.'">'.$Speaker->getParameter('ArtistFullName').'</a></div>';
+		
+		
+			$return.= '<div class="speaker-description">'.$Speaker->getParameter('ArtistDescription');
+		
+			$return.= '</div> <!-- .speaker-description -->';
+			$return.= '<a href="'.$speaker_page.'?subject=lineup&_year='.$year.'&speaker='.$SpeakerID.'" class="speaker-list-read-more"><img src="/wp-content/plugins/list-speakers/img/readmore.png" class="nolazyload"></a>';
 			$return.= '</div> <!-- .speaker -->';
 	//	}
 		$i++;
 	}
+	$return.= '</div> <!-- #list-speakers -->';
 	return $return;
+}
+
+add_action('init', 'ls_enable_required_js_in_wordpress');
+function ls_enable_required_js_in_wordpress() {
+	
+	if (!is_admin()) {
+
+		//jQuery 
+		wp_deregister_script('jquery');
+		wp_register_script('jquery', 'https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js');
+		wp_enqueue_script('jquery');
+		
+		// content slider 
+		// http://brenelz.com/blog/build-a-content-slider-with-jquery/
+		wp_deregister_script('bxslider');
+    	wp_register_script('bxslider',  'http://bxslider.com/sites/default/files/jquery.bxSlider.min.js');
+		wp_enqueue_script('bxslider', 'http://bxslider.com/sites/default/files/jquery.bxSlider.min.js');
+
+	}
+}
+add_action('init','ls_add_css_scripts');
+function ls_add_css_scripts() {
+	wp_enqueue_style( 'list-speakers-contentslider', '/wp-content/plugins/list-speakers/css/list-speakers.css');
+}
+
+add_action('wp_footer', 'add_ls_onload' );
+function add_ls_onload() {
+    ?>
+   <script type="text/javascript">
+        /***************************************************
+                Nivo Slider
+        ***************************************************/
+        jQuery.noConflict()(function($){
+            jQuery(document).ready(function($){
+            $(window).load(function() {
+					$('.list-speaker-item').css("display","block");
+				
+					// see http://bxslider.com/options
+               	 	$('#list-speakers').bxSlider({
+				     	auto: true,
+				     	autoControls: false,
+				 		controls: false,
+				 		speed: 500,
+				 		randomStart: true
+				   });
+            });
+        });
+        });
+    </script>
+    <?php
 }
 
 
 
 
 
-function widget_list_speakers($args) {
+function widget_list_speakers($args, $instance) {
   extract($args, EXTR_SKIP);
   $options = get_option(LIST_SPEAKERS_WIDGET_ID);
 
@@ -62,6 +128,9 @@ function widget_list_speakers($args) {
   $speaker_page= $options["speaker_page"];
 
   echo $before_widget;
+  echo $before_title;
+  echo $options["title"];
+  echo $after_title;
   echo list_speakers($options);
   echo $after_widget;
 }
@@ -82,6 +151,7 @@ function widget_list_speakers_control() {
   if ($widget_data['submit']) {
     $options['num_speakers'] = $widget_data['num_speakers'];
     $options['year'] = $widget_data['year'];
+    $options['title'] = $widget_data['title'];
     $options['show_excerpt'] = $widget_data['show_excerpt'];
     $options['speaker_page'] = $widget_data['speaker_page'];
 
@@ -91,10 +161,23 @@ function widget_list_speakers_control() {
   // Render form
   $num_speakers = $options['num_speakers'];
   $year = $options['year'];
+  $title = $options['title'];
   $show_excerpt = $options['show_excerpt'];
   $speaker_page = $options['speaker_page'];
   
 ?>
+
+<p>
+   <label for="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-title">
+    Title
+   </label>
+   <input class="widefat" type="text" 
+     name="<?php echo LIST_SPEAKERS_WIDGET_ID; ?>[title]" 
+     id="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-title" 
+     value="<?php echo $title; ?>">
+ </p>
+
+
   <p>
     <label for="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-num-posts">
       Number of speakes to show:
@@ -125,7 +208,7 @@ function widget_list_speakers_control() {
   </p>
   <p>
     <label for="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-show-excerpt">
-    	Show excerpt:
+    	Show description:
     </label>
     <select class="widefat" 
       name="<?php echo LIST_SPEAKERS_WIDGET_ID; ?>[show_excerpt]" 
@@ -142,5 +225,8 @@ function widget_list_speakers_control() {
 }
 
 // Register widget to WordPress
+
 add_action("plugins_loaded", "widget_list_speakers_init");
+
+
 ?>
