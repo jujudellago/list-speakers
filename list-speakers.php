@@ -16,8 +16,6 @@ define( 'LIST_SPEAKERS_PLUGIN_URL', WP_PLUGIN_URL.'/'.str_replace(basename( __FI
 function list_speakers($atts=array(),$content=null,$code=''){
 	$year = isset($atts['year']) ? $atts['year'] : date("Y"); // let the year be specified in the shortcode
 	$speaker_page = $atts['speaker_page']; // This should be a URL to a page that includes the shortcode [the_conference_lineup year="my year"] with the addition of ?artist= (or &artist=) as the speaker id will get filled in below
-
-	$nb_speakers = isset($atts['nb_speakers']) ? $atts['nb_speakers'] : 1 ; 
 	
 	
 	$Bootstrap = Bootstrap::getBootstrap(); // The Top Quark bootstrap;
@@ -29,13 +27,10 @@ function list_speakers($atts=array(),$content=null,$code=''){
 	} 
 	$Speakers = $Conference->getLineup();
 
-	// Here's where you make your markup
 
-	$i=0;
-	//error_log('Speakers  ' . $Speakers[1] );
+
 	$return.= '<div id="list-speakers">';
 	foreach ($Speakers as $SpeakerID => $Speaker){
-		//if ($i<$nb_speakers){
 			error_log('Speakers  ' . $Speaker->getParameter('ArtistFullName') );
 			$return.= '<div class="list-speaker-item">';
 			$return.= '<div class="speaker-image">';
@@ -57,8 +52,6 @@ function list_speakers($atts=array(),$content=null,$code=''){
 			$return.= '</div> <!-- .speaker-description -->';
 			$return.= '<a href="'.$speaker_page.'?subject=lineup&_year='.$year.'&speaker='.$SpeakerID.'" class="speaker-list-read-more"><img src="/wp-content/plugins/list-speakers/img/readmore.png" class="nolazyload"></a>';
 			$return.= '</div> <!-- .speaker -->';
-	//	}
-		$i++;
 	}
 	$return.= '</div> <!-- #list-speakers -->';
 	return $return;
@@ -122,7 +115,6 @@ function widget_list_speakers($args, $instance) {
   extract($args, EXTR_SKIP);
   $options = get_option(LIST_SPEAKERS_WIDGET_ID);
 
-  $num_speakers = $options["nb_speakers"];
   $show_excerpt = $options["show_excerpt"];
   $year = $options["year"];
   $speaker_page= $options["speaker_page"];
@@ -149,7 +141,6 @@ function widget_list_speakers_control() {
 
   $widget_data = $_POST[LIST_SPEAKERS_WIDGET_ID];
   if ($widget_data['submit']) {
-    $options['num_speakers'] = $widget_data['num_speakers'];
     $options['year'] = $widget_data['year'];
     $options['title'] = $widget_data['title'];
     $options['show_excerpt'] = $widget_data['show_excerpt'];
@@ -159,7 +150,6 @@ function widget_list_speakers_control() {
   }
 
   // Render form
-  $num_speakers = $options['num_speakers'];
   $year = $options['year'];
   $title = $options['title'];
   $show_excerpt = $options['show_excerpt'];
@@ -178,15 +168,7 @@ function widget_list_speakers_control() {
  </p>
 
 
-  <p>
-    <label for="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-num-posts">
-      Number of speakes to show:
-    </label>
-    <input class="widefat" type="text" 
-      name="<?php echo LIST_SPEAKERS_WIDGET_ID; ?>[num_speakers]" 
-      id="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-num-speakers" 
-      value="<?php echo $num_speakers; ?>">
-  </p>
+ 
   <p>
     <label for="<?php echo LIST_SPEAKERS_WIDGET_ID;?>-num-posts">
     Speaker page

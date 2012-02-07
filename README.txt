@@ -6,6 +6,9 @@ Tested up to: 3.3
 
 REQUIRES A WORKING INSTALLATION OF TOPQUARK & CONFERENCE PLUGIN
 
+if you don't know what that is, start here:
+http://topquark.com/extend/plugins/the-conference-plugin/
+
 
 == Description ==
 List Speakers/Artists from the conference plugin in a widget
@@ -24,7 +27,6 @@ No guarantee or support will be provided at any time by Yabo-concept
 ==Usage and options==
 
 ** title = title displayed for the widget
-** Number of speakes to show =  number of speakers loaded for the animation
 ** Speaker page: This should be a URL to a page that includes the shortcode [the_conference_lineup year="my year"] with the addition of ?artist= (or &artist=) as the speaker id will get filled in below
 ** Year: Year of the festival to load the speakers/artists from
 ** Show description: show the short description of the artist/speaker
